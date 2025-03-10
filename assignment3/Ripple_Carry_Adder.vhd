@@ -1,28 +1,29 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
-entity Ripple_Adder is
-Port ( A : in STD_LOGIC_VECTOR (3 downto 0);
-B : in STD_LOGIC_VECTOR (3 downto 0);
-Cin : in STD_LOGIC;
-S : out STD_LOGIC_VECTOR (3 downto 0);
-Cout : out STD_LOGIC);
-end Ripple_Adder;
- 
-architecture Behavioral of Ripple_Adder is
-component full_adder_vhdl_code
-Port ( A : in STD_LOGIC;
-B : in STD_LOGIC;
-Cin : in STD_LOGIC;
-S : out STD_LOGIC;
-Cout : out STD_LOGIC);
-end component;
- 
-signal c1,c2,c3: STD_LOGIC;
- 
+entity ripple_carry_adder is
+    Generic (N : integer := 4);
+    Port ( A    : in  STD_LOGIC_VECTOR(N-1 downto 0);
+           B    : in  STD_LOGIC_VECTOR(N-1 downto 0);
+           Cin  : in  STD_LOGIC;
+           Sum  : out STD_LOGIC_VECTOR(N-1 downto 0);
+           Cout : out STD_LOGIC);
+end ripple_carry_adder;
+
+architecture Behavioral of ripple_carry_adder is
+    signal carry : STD_LOGIC_VECTOR(N downto 0);
 begin
-FA1: full_adder_vhdl_code port map( A(0), B(0), Cin, S(0), c1);
-FA2: full_adder_vhdl_code port map( A(1), B(1), c1, S(1), c2);
-FA3: full_adder_vhdl_code port map( A(2), B(2), c2, S(2), c3);
-FA4: full_adder_vhdl_code port map( A(3), B(3), c3, S(3), Cout);
+    carry(0) <= Cin;
+    gen_adder: for i in 0 to N-1 generate
+        U1: entity work.full_adder port map (
+            A    => A(i),
+            B    => B(i),
+            Cin  => carry(i),
+            Sum  => Sum(i),
+            Cout => carry(i+1)
+        );
+    end generate;
+    Cout <= carry(N);
 end Behavioral;
